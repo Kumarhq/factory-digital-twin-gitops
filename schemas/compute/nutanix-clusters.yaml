@@ -1,0 +1,240 @@
+# =============================================================================
+# NUTANIX CLUSTERS - Backstage Catalog Schema for Factory Digital Twin
+# =============================================================================
+# File: schemas/compute/nutanix-clusters.yaml
+# Purpose: Define Nutanix HCI clusters in the factory environment
+# ISA-95 Level: L2-L4 depending on workload
+# =============================================================================
+
+---
+# OT Production Nutanix Cluster
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: nutanix-cluster-ot-prod
+  namespace: factory-compute
+  title: Nutanix OT Production Cluster
+  description: Nutanix HCI cluster for OT production workloads (SCADA, Historian)
+  labels:
+    asset-class: compute
+    asset-type: nutanix-cluster
+    environment: production
+    tier: ot-production
+  annotations:
+    isa95.io/zone: zone-l2-supervisory
+    isa95.io/level: L2
+
+    network.io/ip-address: "10.30.0.10"
+    network.io/vlan: "VLAN-300"
+
+    factory.io/building: Plant-A
+    factory.io/floor: "-2"
+    factory.io/space: server-room-b2
+    factory.io/criticality: CRITICAL
+    factory.io/maintenance-window: "Sunday 02:00-06:00 UTC"
+
+    # Cluster Configuration
+    factory.io/config.aos-version: "6.6.2"
+    factory.io/config.prism-central: "prism-central.factory.local"
+    factory.io/config.cluster-vip: "10.30.0.10"
+    factory.io/config.data-services-ip: "10.30.0.11"
+
+    # Node Configuration
+    factory.io/config.node-count: "4"
+    factory.io/config.node-model: "NX-3060-G8"
+    factory.io/config.cpu-per-node: "Intel Xeon Gold 6338 (64 cores)"
+    factory.io/config.memory-per-node-gb: "512"
+    factory.io/config.ssd-per-node-tb: "7.68"
+    factory.io/config.hdd-per-node-tb: "0"
+    factory.io/config.total-vcpus: "256"
+    factory.io/config.total-memory-tb: "2"
+    factory.io/config.total-storage-tb: "30.72"
+
+    # Storage Configuration
+    factory.io/config.storage-container: "ot-production"
+    factory.io/config.replication-factor: "2"
+    factory.io/config.compression: "enabled"
+    factory.io/config.deduplication: "disabled"
+    factory.io/config.erasure-coding: "disabled"
+
+    # Network Configuration
+    factory.io/config.ahv-network: "ot-vlan-300"
+    factory.io/config.ipam-enabled: "true"
+    factory.io/config.microsegmentation: "enabled"
+
+    # HA Configuration
+    factory.io/config.ha-enabled: "true"
+    factory.io/config.ha-reservation: "1-node"
+    factory.io/config.dr-enabled: "true"
+    factory.io/config.dr-site: "nutanix-cluster-dr"
+
+  tags:
+    - compute
+    - nutanix
+    - hci
+    - ot-production
+    - critical
+
+spec:
+  type: NutanixCluster
+  owner: team-ot-infrastructure
+  system: factory-ot-infrastructure
+
+  expectedConfig:
+    aosVersion: "6.6.2"
+    nodeCount: 4
+    nodeModel: NX-3060-G8
+    totalVCPUs: 256
+    totalMemoryTB: 2
+    totalStorageTB: 30.72
+    replicationFactor: 2
+    haEnabled: true
+    drEnabled: true
+
+---
+# IT/MES Nutanix Cluster
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: nutanix-cluster-it-prod
+  namespace: factory-compute
+  title: Nutanix IT Production Cluster
+  description: Nutanix HCI cluster for IT/MES production workloads
+  labels:
+    asset-class: compute
+    asset-type: nutanix-cluster
+    environment: production
+    tier: it-production
+  annotations:
+    isa95.io/zone: zone-l3-mes
+    isa95.io/level: L3
+
+    network.io/ip-address: "10.31.0.10"
+    network.io/vlan: "VLAN-310"
+
+    factory.io/building: Plant-A
+    factory.io/floor: "-2"
+    factory.io/space: server-room-b2
+    factory.io/criticality: HIGH
+    factory.io/maintenance-window: "Sunday 02:00-06:00 UTC"
+
+    factory.io/config.aos-version: "6.6.2"
+    factory.io/config.prism-central: "prism-central.factory.local"
+    factory.io/config.cluster-vip: "10.31.0.10"
+
+    factory.io/config.node-count: "6"
+    factory.io/config.node-model: "NX-8155-G8"
+    factory.io/config.cpu-per-node: "AMD EPYC 7763 (128 cores)"
+    factory.io/config.memory-per-node-gb: "1024"
+    factory.io/config.ssd-per-node-tb: "15.36"
+    factory.io/config.total-vcpus: "768"
+    factory.io/config.total-memory-tb: "6"
+    factory.io/config.total-storage-tb: "92.16"
+
+    factory.io/config.storage-container: "it-production"
+    factory.io/config.replication-factor: "2"
+    factory.io/config.compression: "enabled"
+    factory.io/config.deduplication: "enabled"
+
+    # Kubernetes Integration
+    factory.io/config.nke-enabled: "true"
+    factory.io/config.nke-clusters: "k8s-cluster-factory-prod"
+
+  tags:
+    - compute
+    - nutanix
+    - hci
+    - it-production
+    - mes
+
+spec:
+  type: NutanixCluster
+  owner: team-it-infrastructure
+  system: factory-it-infrastructure
+
+  expectedConfig:
+    aosVersion: "6.6.2"
+    nodeCount: 6
+    nodeModel: NX-8155-G8
+    totalVCPUs: 768
+    totalMemoryTB: 6
+    totalStorageTB: 92.16
+    nkeEnabled: true
+
+---
+# Edge Nutanix Cluster
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: nutanix-cluster-edge-01
+  namespace: factory-compute
+  title: Nutanix Edge Cluster Production Floor
+  description: Edge Nutanix cluster deployed on production floor for local workloads
+  labels:
+    asset-class: compute
+    asset-type: nutanix-cluster
+    environment: production
+    tier: edge
+  annotations:
+    isa95.io/zone: zone-l1-control
+    isa95.io/level: L1
+
+    network.io/ip-address: "10.50.0.10"
+    network.io/vlan: "VLAN-500"
+
+    factory.io/building: Plant-A
+    factory.io/floor: "1"
+    factory.io/space: production-line-01
+    factory.io/criticality: HIGH
+
+    factory.io/config.aos-version: "6.6.2"
+    factory.io/config.cluster-vip: "10.50.0.10"
+
+    # Edge-optimized configuration
+    factory.io/config.node-count: "2"
+    factory.io/config.node-model: "NX-1175S-G8"
+    factory.io/config.cpu-per-node: "Intel Xeon D-2187NT (16 cores)"
+    factory.io/config.memory-per-node-gb: "128"
+    factory.io/config.ssd-per-node-tb: "3.84"
+    factory.io/config.total-vcpus: "32"
+    factory.io/config.total-memory-gb: "256"
+    factory.io/config.total-storage-tb: "7.68"
+
+    # Edge features
+    factory.io/config.replication-factor: "2"
+    factory.io/config.witness-enabled: "true"
+    factory.io/config.witness-address: "10.30.0.100"
+    factory.io/config.industrial-rated: "true"
+    factory.io/config.extended-temp: "0C to 45C"
+
+  tags:
+    - compute
+    - nutanix
+    - hci
+    - edge
+    - industrial
+
+spec:
+  type: NutanixCluster
+  owner: team-edge-computing
+  system: factory-edge-infrastructure
+
+  zone: zone-l1-control
+  building: Plant-A
+  floor: 1
+  space: production-line-01
+  criticality: HIGH
+
+  expectedConfig:
+    aosVersion: "6.6.2"
+    nodeCount: 2
+    nodeModel: NX-1175S-G8
+    totalVCPUs: 32
+    totalMemoryGB: 256
+    totalStorageTB: 7.68
+    witnessEnabled: true
+    industrialRated: true
+
+  dependsOn:
+    - component:factory-network/access-switch-line-01
+    - component:factory-network/firewall-cell-line-01

@@ -1,0 +1,215 @@
+# =============================================================================
+# NETWORK SWITCHES - Backstage Catalog Schema for Factory Digital Twin
+# =============================================================================
+# File: schemas/network/switches.yaml
+# Purpose: Define network switches in the factory environment
+# ISA-95 Level: Typically L1-L4 depending on switch role
+# =============================================================================
+
+---
+# Core Switch - Manufacturing Network Backbone
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: core-switch-mfg-01
+  namespace: factory-network
+  title: Core Switch Manufacturing 01
+  description: Primary core switch for manufacturing network backbone
+  labels:
+    asset-class: network
+    asset-type: switch
+    environment: production
+    criticality: critical
+  annotations:
+    # ISA-95 Zone Annotations
+    isa95.io/zone: zone-l3-mes
+    isa95.io/level: L3
+
+    # Network Configuration
+    network.io/ip-address: "10.10.0.1"
+    network.io/mac-address: "00:1A:2B:3C:4D:01"
+    network.io/vlan: "VLAN-100"
+
+    # Factory Metadata
+    factory.io/building: Plant-A
+    factory.io/floor: "1"
+    factory.io/space: network-closet-main
+    factory.io/manufacturer: Cisco
+    factory.io/model: Catalyst 9500
+    factory.io/serial-number: FCW2345L123
+    factory.io/firmware: "17.6.4"
+    factory.io/criticality: CRITICAL
+    factory.io/maintenance-window: "Sunday 02:00-06:00 UTC"
+
+    # Expected Configuration
+    factory.io/config.ports: "48"
+    factory.io/config.speed: "10Gbps"
+    factory.io/config.poe: "true"
+    factory.io/config.stacking: "enabled"
+    factory.io/config.stp-mode: "rapid-pvst"
+    factory.io/config.snmp-community: "factory_ro"
+
+    # Monitoring
+    backstage.io/techdocs-ref: dir:./docs
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9116"
+
+  tags:
+    - network
+    - switch
+    - core
+    - layer3
+    - critical
+  links:
+    - url: https://nms.factory.local/devices/core-switch-mfg-01
+      title: Network Management System
+      icon: dashboard
+    - url: https://wiki.factory.local/network/core-switches
+      title: Documentation
+      icon: docs
+
+spec:
+  type: Switch
+  lifecycle: production
+  owner: team-network-infrastructure
+  system: factory-network-infrastructure
+
+  # Dependencies
+  dependsOn:
+    - component:default/ups-rack-network-01
+    - resource:default/power-distribution-unit-01
+  dependencyOf:
+    - component:factory-network/access-switch-line-01
+    - component:factory-network/access-switch-line-02
+    - component:factory-network/firewall-ot-dmz
+
+---
+# Access Switch - Production Line
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: access-switch-line-01
+  namespace: factory-network
+  title: Access Switch Production Line 01
+  description: Access layer switch for Production Line 01 devices
+  labels:
+    asset-class: network
+    asset-type: switch
+    environment: production
+    production-line: line-01
+  annotations:
+    isa95.io/zone: zone-l1-control
+    isa95.io/level: L1
+
+    network.io/ip-address: "10.50.1.1"
+    network.io/mac-address: "00:1A:2B:3C:4D:10"
+    network.io/vlan: "VLAN-150"
+
+    factory.io/building: Plant-A
+    factory.io/floor: "1"
+    factory.io/space: production-line-01
+    factory.io/manufacturer: Cisco
+    factory.io/model: IE-4000-8GS4G-E
+    factory.io/serial-number: FCW2345L456
+    factory.io/firmware: "15.2(7)E3"
+    factory.io/criticality: HIGH
+
+    # Industrial-specific configs
+    factory.io/config.ports: "12"
+    factory.io/config.industrial-rated: "true"
+    factory.io/config.extended-temp: "-40C to 75C"
+    factory.io/config.din-rail-mount: "true"
+    factory.io/config.profinet-enabled: "true"
+
+  tags:
+    - network
+    - switch
+    - access
+    - industrial
+    - profinet
+
+spec:
+  type: Switch
+  lifecycle: production
+  owner: team-ot-network
+  system: production-line-01-network
+
+  # Factory extensions
+  zone: zone-l1-control
+  building: Plant-A
+  floor: 1
+  space: production-line-01
+  ipAddress: "10.50.1.1"
+  manufacturer: Cisco
+  model: IE-4000-8GS4G-E
+  firmware: "15.2(7)E3"
+  criticality: HIGH
+
+  dependsOn:
+    - component:factory-network/core-switch-mfg-01
+  dependencyOf:
+    - component:factory-ot/plc-line-01-main
+    - component:factory-ot/hmi-line-01-station-01
+    - component:factory-ot/vfd-conveyor-01
+
+---
+# Aggregation Switch - OT Network
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: agg-switch-ot-01
+  namespace: factory-network
+  title: Aggregation Switch OT Zone 01
+  description: Aggregation switch for OT network zone
+  labels:
+    asset-class: network
+    asset-type: switch
+    environment: production
+    network-tier: aggregation
+  annotations:
+    isa95.io/zone: zone-l2-supervisory
+    isa95.io/level: L2
+
+    network.io/ip-address: "10.50.0.1"
+    network.io/mac-address: "00:1A:2B:3C:4D:20"
+    network.io/vlan: "VLAN-101"
+
+    factory.io/building: Plant-A
+    factory.io/floor: "1"
+    factory.io/space: network-closet-ot-01
+    factory.io/manufacturer: Cisco
+    factory.io/model: IE-5000-12S12P-10G
+    factory.io/serial-number: FCW2345L789
+    factory.io/firmware: "15.2(7)E4"
+    factory.io/criticality: CRITICAL
+
+    factory.io/config.ports: "24"
+    factory.io/config.ring-protection: "REP"
+    factory.io/config.redundancy: "HSR/PRP"
+
+  tags:
+    - network
+    - switch
+    - aggregation
+    - industrial
+    - redundant
+
+spec:
+  type: Switch
+  lifecycle: production
+  owner: team-ot-network
+  system: factory-ot-network
+
+  zone: zone-l2-supervisory
+  building: Plant-A
+  ipAddress: "10.50.0.1"
+  manufacturer: Cisco
+  model: IE-5000-12S12P-10G
+  firmware: "15.2(7)E4"
+  criticality: CRITICAL
+
+  dependsOn:
+    - component:factory-network/core-switch-mfg-01
+  dependencyOf:
+    - component:factory-network/access-switch-line-01
+    - component:factory-network/access-switch-line-02

@@ -1,0 +1,146 @@
+# =============================================================================
+# FACTORY DIGITAL TWIN - ROOT CATALOG
+# =============================================================================
+# This is the root catalog-info.yaml for the Factory Digital Twin
+# It defines the top-level systems and domains for the factory
+# =============================================================================
+
+---
+# Factory Domain
+apiVersion: backstage.io/v1alpha1
+kind: Domain
+metadata:
+  name: factory-operations
+  namespace: factory
+  title: Factory Operations
+  description: All factory operational technology and manufacturing systems
+  annotations:
+    factory.io/site: Plant-A
+    factory.io/region: North America
+  tags:
+    - manufacturing
+    - ot
+    - production
+spec:
+  owner: factory-operations-team
+
+---
+# OT Network System
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: factory-ot-network
+  namespace: factory
+  title: Factory OT Network Infrastructure
+  description: Operational Technology network infrastructure including switches, routers, and firewalls
+  annotations:
+    isa95.io/zone: zone-l1-control
+  tags:
+    - network
+    - infrastructure
+    - ot
+spec:
+  owner: team-network-infrastructure
+  domain: factory-operations
+
+---
+# SCADA System
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: factory-scada-system
+  namespace: factory
+  title: Factory SCADA System
+  description: Supervisory Control and Data Acquisition system for factory operations
+  annotations:
+    isa95.io/zone: zone-l2-supervisory
+  tags:
+    - scada
+    - control
+    - monitoring
+spec:
+  owner: team-automation-engineering
+  domain: factory-operations
+
+---
+# MES System
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: factory-mes-system
+  namespace: factory
+  title: Manufacturing Execution System
+  description: MES for production tracking, quality, and operations management
+  annotations:
+    isa95.io/zone: zone-l3-mes
+  tags:
+    - mes
+    - production
+    - quality
+spec:
+  owner: team-mes-operations
+  domain: factory-operations
+
+---
+# Production Line 01 System
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: production-line-01
+  namespace: factory
+  title: Production Line 01
+  description: Main assembly and production line
+  annotations:
+    isa95.io/zone: zone-l1-control
+    factory.io/building: Plant-A
+    factory.io/floor: "1"
+    factory.io/space: production-line-01
+    factory.io/capacity: "100 units/hour"
+    factory.io/shift-schedule: "3-shift"
+  tags:
+    - production
+    - assembly
+    - line-01
+spec:
+  owner: team-production-line-01
+  domain: factory-operations
+
+---
+# Tank Farm System
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: tank-farm-system
+  namespace: factory
+  title: Tank Farm Storage
+  description: Bulk storage tank farm for raw materials and products
+  annotations:
+    isa95.io/zone: zone-l0-process
+    factory.io/building: Tank-Farm
+    factory.io/hazardous-area: Zone 2
+  tags:
+    - storage
+    - tank-farm
+    - process
+spec:
+  owner: team-process-engineering
+  domain: factory-operations
+
+---
+# Data Platform System
+apiVersion: backstage.io/v1alpha1
+kind: System
+metadata:
+  name: factory-data-platform
+  namespace: factory
+  title: Factory Data Platform
+  description: Data integration, analytics, and AI/ML platform
+  annotations:
+    isa95.io/zone: zone-l3-mes
+  tags:
+    - data
+    - analytics
+    - integration
+spec:
+  owner: team-data-engineering
+  domain: factory-operations

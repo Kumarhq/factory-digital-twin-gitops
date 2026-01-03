@@ -1,0 +1,280 @@
+# =============================================================================
+# KUBERNETES RESOURCES - Backstage Catalog Schema for Factory Digital Twin
+# =============================================================================
+# File: schemas/compute/kubernetes.yaml
+# Purpose: Define Kubernetes deployments, pods, and services
+# ISA-95 Level: L3-L4 (typically business applications)
+# =============================================================================
+
+---
+# Kubernetes Cluster
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: k8s-cluster-factory-prod
+  namespace: factory-compute
+  title: Factory Production Kubernetes Cluster
+  description: Production Kubernetes cluster for factory applications
+  labels:
+    asset-class: compute
+    asset-type: kubernetes-cluster
+    environment: production
+  annotations:
+    isa95.io/zone: zone-l3-mes
+    isa95.io/level: L3
+
+    factory.io/building: Plant-A
+    factory.io/space: server-room-b2
+    factory.io/criticality: CRITICAL
+
+    # Cluster Configuration
+    factory.io/config.k8s-version: "1.28.4"
+    factory.io/config.distribution: "Rancher RKE2"
+    factory.io/config.control-plane-nodes: "3"
+    factory.io/config.worker-nodes: "6"
+    factory.io/config.total-vcpus: "96"
+    factory.io/config.total-memory-gb: "384"
+    factory.io/config.cni: "Calico"
+    factory.io/config.storage-class: "longhorn"
+    factory.io/config.ingress-controller: "nginx"
+    factory.io/config.service-mesh: "istio"
+
+  tags:
+    - compute
+    - kubernetes
+    - cluster
+    - rke2
+    - production
+
+spec:
+  type: kubernetes-cluster
+  owner: team-platform-engineering
+  system: factory-platform
+
+---
+# SCADA Web Frontend Deployment
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: scada-web-frontend
+  namespace: factory-scada
+  title: SCADA Web Frontend
+  description: Web-based SCADA visualization frontend running in Kubernetes
+  labels:
+    asset-class: compute
+    asset-type: deployment
+    environment: production
+    tier: frontend
+  annotations:
+    isa95.io/zone: zone-l3-mes
+    isa95.io/level: L3
+
+    network.io/ip-address: "10.30.10.100"
+    network.io/vlan: "VLAN-310"
+
+    factory.io/building: Plant-A
+    factory.io/criticality: HIGH
+
+    # Kubernetes Configuration
+    factory.io/config.k8s-cluster: "k8s-cluster-factory-prod"
+    factory.io/config.k8s-namespace: "factory-scada"
+    factory.io/config.replicas: "3"
+    factory.io/config.min-replicas: "2"
+    factory.io/config.max-replicas: "10"
+
+    # Container Configuration
+    factory.io/config.container-image: "factory-registry.local/scada-frontend"
+    factory.io/config.container-tag: "v2.5.1"
+    factory.io/config.cpu-request: "500m"
+    factory.io/config.cpu-limit: "2000m"
+    factory.io/config.memory-request: "1Gi"
+    factory.io/config.memory-limit: "4Gi"
+
+    # Networking
+    factory.io/config.service-type: "ClusterIP"
+    factory.io/config.service-port: "443"
+    factory.io/config.ingress-host: "scada.factory.local"
+    factory.io/config.ingress-tls: "true"
+
+    # Health Checks
+    factory.io/config.liveness-probe: "/health/live"
+    factory.io/config.readiness-probe: "/health/ready"
+    factory.io/config.startup-probe: "/health/startup"
+
+  tags:
+    - compute
+    - kubernetes
+    - deployment
+    - scada
+    - frontend
+
+spec:
+  type: Deployment
+  lifecycle: production
+  owner: team-scada-development
+  system: factory-scada-system
+
+  zone: zone-l3-mes
+  building: Plant-A
+  criticality: HIGH
+
+  expectedConfig:
+    k8sCluster: k8s-cluster-factory-prod
+    k8sNamespace: factory-scada
+    replicas: 3
+    containerImage: factory-registry.local/scada-frontend
+    containerTag: v2.5.1
+    cpuRequest: 500m
+    cpuLimit: 2000m
+    memoryRequest: 1Gi
+    memoryLimit: 4Gi
+
+  providesApis:
+    - api:factory-scada/scada-web-api
+  consumesApis:
+    - api:factory-scada/scada-backend-api
+  dependsOn:
+    - resource:factory-compute/k8s-cluster-factory-prod
+    - component:factory-scada/scada-backend-api
+  dependencyOf:
+    - component:factory-ops/operator-workstations
+
+---
+# SCADA Backend API Deployment
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: scada-backend-api
+  namespace: factory-scada
+  title: SCADA Backend API
+  description: Backend API service for SCADA data and control operations
+  labels:
+    asset-class: compute
+    asset-type: deployment
+    environment: production
+    tier: backend
+  annotations:
+    isa95.io/zone: zone-l3-mes
+    isa95.io/level: L3
+
+    factory.io/building: Plant-A
+    factory.io/criticality: CRITICAL
+
+    factory.io/config.k8s-cluster: "k8s-cluster-factory-prod"
+    factory.io/config.k8s-namespace: "factory-scada"
+    factory.io/config.replicas: "3"
+    factory.io/config.container-image: "factory-registry.local/scada-backend"
+    factory.io/config.container-tag: "v2.5.1"
+    factory.io/config.cpu-request: "1000m"
+    factory.io/config.cpu-limit: "4000m"
+    factory.io/config.memory-request: "2Gi"
+    factory.io/config.memory-limit: "8Gi"
+
+    # OPC-UA Client Configuration
+    factory.io/config.opcua-client-enabled: "true"
+    factory.io/config.opcua-endpoints: "opc.tcp://10.50.1.10:4840,opc.tcp://10.50.2.10:4840"
+    factory.io/config.opcua-security: "SignAndEncrypt"
+
+  tags:
+    - compute
+    - kubernetes
+    - deployment
+    - scada
+    - backend
+    - api
+
+spec:
+  type: Deployment
+  lifecycle: production
+  owner: team-scada-development
+  system: factory-scada-system
+
+  zone: zone-l3-mes
+  building: Plant-A
+  criticality: CRITICAL
+
+  expectedConfig:
+    replicas: 3
+    containerImage: factory-registry.local/scada-backend
+    containerTag: v2.5.1
+    opcuaClientEnabled: true
+    opcuaSecurity: SignAndEncrypt
+
+  providesApis:
+    - api:factory-scada/scada-backend-api
+  consumesApis:
+    - api:factory-ot/opcua-gateway-api
+    - api:factory-historian/pi-web-api
+  dependsOn:
+    - resource:factory-compute/k8s-cluster-factory-prod
+    - component:factory-compute/vm-historian-db-01
+  dependencyOf:
+    - component:factory-scada/scada-web-frontend
+
+---
+# Data Integration Service
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: data-integration-service
+  namespace: factory-data
+  title: Data Integration Service
+  description: ETL and data integration service for factory data pipelines
+  labels:
+    asset-class: compute
+    asset-type: deployment
+    environment: production
+    tier: middleware
+  annotations:
+    isa95.io/zone: zone-l3-mes
+    isa95.io/level: L3
+
+    factory.io/building: Plant-A
+    factory.io/criticality: HIGH
+
+    factory.io/config.k8s-cluster: "k8s-cluster-factory-prod"
+    factory.io/config.k8s-namespace: "factory-data"
+    factory.io/config.replicas: "2"
+    factory.io/config.container-image: "factory-registry.local/data-integration"
+    factory.io/config.container-tag: "v1.8.3"
+
+    # Kafka Configuration
+    factory.io/config.kafka-enabled: "true"
+    factory.io/config.kafka-brokers: "kafka-0.kafka.factory-data:9092,kafka-1.kafka.factory-data:9092"
+    factory.io/config.kafka-consumer-group: "data-integration"
+
+    # Database Connections
+    factory.io/config.historian-connection: "pi-web-api"
+    factory.io/config.mes-connection: "mes-api"
+    factory.io/config.erp-connection: "sap-interface"
+
+  tags:
+    - compute
+    - kubernetes
+    - deployment
+    - data
+    - etl
+    - integration
+
+spec:
+  type: Deployment
+  lifecycle: production
+  owner: team-data-engineering
+  system: factory-data-platform
+
+  zone: zone-l3-mes
+  building: Plant-A
+  criticality: HIGH
+
+  expectedConfig:
+    replicas: 2
+    kafkaEnabled: true
+
+  consumesApis:
+    - api:factory-historian/pi-web-api
+    - api:factory-mes/mes-api
+    - api:factory-erp/sap-interface-api
+  dependsOn:
+    - resource:factory-compute/k8s-cluster-factory-prod
+    - component:factory-compute/vm-historian-db-01
+    - component:factory-compute/vm-mes-app-01

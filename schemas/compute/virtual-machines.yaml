@@ -1,0 +1,253 @@
+# =============================================================================
+# VIRTUAL MACHINES - Backstage Catalog Schema for Factory Digital Twin
+# =============================================================================
+# File: schemas/compute/virtual-machines.yaml
+# Purpose: Define virtual machines in the factory environment
+# ISA-95 Level: L2-L4 depending on VM role
+# =============================================================================
+
+---
+# SCADA Server VM
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: vm-scada-server-01
+  namespace: factory-compute
+  title: SCADA Server Primary
+  description: Primary SCADA server for supervisory control and data acquisition
+  labels:
+    asset-class: compute
+    asset-type: virtual-machine
+    environment: production
+    role: scada
+    ha-pair: primary
+  annotations:
+    isa95.io/zone: zone-l2-supervisory
+    isa95.io/level: L2
+
+    network.io/ip-address: "10.30.1.10"
+    network.io/mac-address: "00:50:56:AB:CD:01"
+    network.io/vlan: "VLAN-301"
+
+    factory.io/building: Plant-A
+    factory.io/floor: "-2"
+    factory.io/space: server-room-b2
+    factory.io/criticality: CRITICAL
+    factory.io/maintenance-window: "Sunday 03:00-05:00 UTC"
+
+    # Hypervisor Information
+    factory.io/config.hypervisor: "VMware vSphere 8.0"
+    factory.io/config.hypervisor-host: "esxi-ot-01.factory.local"
+    factory.io/config.datastore: "vsan-ot-production"
+    factory.io/config.resource-pool: "OT-Critical"
+
+    # VM Specifications
+    factory.io/config.vcpus: "8"
+    factory.io/config.memory-gb: "32"
+    factory.io/config.disk-gb: "500"
+    factory.io/config.os: "Windows Server 2022"
+    factory.io/config.os-version: "21H2"
+
+    # HA Configuration
+    factory.io/config.ha-enabled: "true"
+    factory.io/config.ha-peer: "vm-scada-server-02"
+    factory.io/config.drs-group: "OT-SCADA"
+    factory.io/config.affinity-rule: "separate-hosts"
+
+    # Application Configuration
+    factory.io/config.scada-software: "Ignition SCADA"
+    factory.io/config.scada-version: "8.1.28"
+    factory.io/config.historian-enabled: "true"
+    factory.io/config.alarming-enabled: "true"
+    factory.io/config.redundancy-role: "master"
+
+  tags:
+    - compute
+    - vm
+    - scada
+    - critical
+    - windows
+
+spec:
+  type: VirtualMachine
+  lifecycle: production
+  owner: team-ot-infrastructure
+  system: factory-scada-system
+
+  zone: zone-l2-supervisory
+  building: Plant-A
+  space: server-room-b2
+  ipAddress: "10.30.1.10"
+  criticality: CRITICAL
+
+  expectedConfig:
+    vcpus: 8
+    memoryGB: 32
+    diskGB: 500
+    os: Windows Server 2022
+    scadaSoftware: Ignition SCADA
+    scadaVersion: "8.1.28"
+    haEnabled: true
+
+  providesApis:
+    - api:factory-scada/scada-gateway-api
+  consumesApis:
+    - api:factory-ot/opcua-gateway-api
+  dependsOn:
+    - component:factory-compute/esxi-ot-01
+    - component:factory-network/firewall-ot-dmz
+  dependencyOf:
+    - component:factory-scada/scada-client-01
+    - component:factory-mes/mes-interface
+
+---
+# MES Application Server
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: vm-mes-app-01
+  namespace: factory-compute
+  title: MES Application Server
+  description: Manufacturing Execution System application server
+  labels:
+    asset-class: compute
+    asset-type: virtual-machine
+    environment: production
+    role: mes
+  annotations:
+    isa95.io/zone: zone-l3-mes
+    isa95.io/level: L3
+
+    network.io/ip-address: "10.30.2.10"
+    network.io/mac-address: "00:50:56:AB:CD:10"
+    network.io/vlan: "VLAN-302"
+
+    factory.io/building: Plant-A
+    factory.io/floor: "-2"
+    factory.io/space: server-room-b2
+    factory.io/criticality: HIGH
+
+    factory.io/config.hypervisor: "VMware vSphere 8.0"
+    factory.io/config.hypervisor-host: "esxi-app-01.factory.local"
+    factory.io/config.vcpus: "16"
+    factory.io/config.memory-gb: "64"
+    factory.io/config.disk-gb: "1000"
+    factory.io/config.os: "RHEL 8"
+    factory.io/config.os-version: "8.8"
+
+    factory.io/config.mes-software: "Siemens Opcenter"
+    factory.io/config.mes-version: "2310"
+    factory.io/config.database: "Oracle 19c"
+    factory.io/config.app-server: "Apache Tomcat 10"
+
+  tags:
+    - compute
+    - vm
+    - mes
+    - linux
+    - rhel
+
+spec:
+  type: VirtualMachine
+  lifecycle: production
+  owner: team-mes-operations
+  system: factory-mes-system
+
+  zone: zone-l3-mes
+  building: Plant-A
+  space: server-room-b2
+  ipAddress: "10.30.2.10"
+  criticality: HIGH
+
+  expectedConfig:
+    vcpus: 16
+    memoryGB: 64
+    os: RHEL 8
+    mesSoftware: Siemens Opcenter
+    mesVersion: "2310"
+
+  providesApis:
+    - api:factory-mes/mes-api
+    - api:factory-mes/work-order-api
+  consumesApis:
+    - api:factory-scada/scada-gateway-api
+    - api:factory-erp/sap-interface-api
+  dependsOn:
+    - component:factory-compute/esxi-app-01
+    - component:factory-network/firewall-ot-dmz
+    - component:factory-compute/vm-oracle-db-01
+
+---
+# Historian Database Server
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: vm-historian-db-01
+  namespace: factory-compute
+  title: Historian Database Server
+  description: Time-series database for industrial process data
+  labels:
+    asset-class: compute
+    asset-type: virtual-machine
+    environment: production
+    role: historian
+  annotations:
+    isa95.io/zone: zone-l2-supervisory
+    isa95.io/level: L2
+
+    network.io/ip-address: "10.30.1.20"
+    network.io/mac-address: "00:50:56:AB:CD:20"
+    network.io/vlan: "VLAN-301"
+
+    factory.io/building: Plant-A
+    factory.io/floor: "-2"
+    factory.io/space: server-room-b2
+    factory.io/criticality: HIGH
+
+    factory.io/config.hypervisor: "VMware vSphere 8.0"
+    factory.io/config.vcpus: "16"
+    factory.io/config.memory-gb: "128"
+    factory.io/config.disk-gb: "4000"
+    factory.io/config.os: "Windows Server 2022"
+
+    factory.io/config.historian-software: "OSIsoft PI"
+    factory.io/config.historian-version: "2023"
+    factory.io/config.data-retention: "10 years"
+    factory.io/config.tags-count: "50000"
+    factory.io/config.archive-rate: "1 second"
+    factory.io/config.compression: "swinging-door"
+
+  tags:
+    - compute
+    - vm
+    - historian
+    - timeseries
+    - osisoft
+
+spec:
+  type: VirtualMachine
+  lifecycle: production
+  owner: team-ot-infrastructure
+  system: factory-historian-system
+
+  zone: zone-l2-supervisory
+  building: Plant-A
+  space: server-room-b2
+  ipAddress: "10.30.1.20"
+  criticality: HIGH
+
+  expectedConfig:
+    vcpus: 16
+    memoryGB: 128
+    diskGB: 4000
+    historianSoftware: OSIsoft PI
+    historianVersion: "2023"
+    tagsCount: 50000
+
+  providesApis:
+    - api:factory-historian/pi-web-api
+  consumesApis:
+    - api:factory-scada/scada-gateway-api
+  dependsOn:
+    - component:factory-compute/esxi-ot-01
+    - component:factory-compute/vm-scada-server-01

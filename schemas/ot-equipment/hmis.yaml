@@ -1,0 +1,338 @@
+# =============================================================================
+# HUMAN MACHINE INTERFACES (HMIs) - Backstage Catalog Schema
+# =============================================================================
+# File: schemas/ot-equipment/hmis.yaml
+# Purpose: Define HMI panels and operator interfaces in the factory
+# ISA-95 Level: L1/L2 (Supervisory Control)
+# =============================================================================
+
+---
+# Main Line HMI Panel
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: hmi-line-01-station-01
+  namespace: factory-ot
+  title: HMI Production Line 01 Station 01
+  description: Primary operator HMI panel for Production Line 01
+  labels:
+    asset-class: ot-equipment
+    asset-type: hmi
+    environment: production
+    production-line: line-01
+    station: main-control
+  annotations:
+    isa95.io/zone: zone-l1-control
+    isa95.io/level: L1
+
+    network.io/ip-address: "10.50.1.20"
+    network.io/mac-address: "00:0C:29:AB:01:20"
+    network.io/vlan: "VLAN-150"
+
+    factory.io/building: Plant-A
+    factory.io/floor: "1"
+    factory.io/space: production-line-01
+    factory.io/position: '{"x": 30.0, "y": 15.5, "z": 1.2}'
+    factory.io/manufacturer: Siemens
+    factory.io/model: SIMATIC HMI TP1900 Comfort
+    factory.io/serial-number: S C-HMI19001234
+    factory.io/firmware: "V17.0 Update 4"
+    factory.io/criticality: HIGH
+
+    # HMI-Specific Configuration
+    factory.io/config.screen-size: "19 inch"
+    factory.io/config.resolution: "1920x1080"
+    factory.io/config.touch-type: "capacitive"
+    factory.io/config.runtime-software: "WinCC Comfort V17"
+    factory.io/config.project-name: "Line01_HMI_Main"
+    factory.io/config.project-version: "3.5.2"
+    factory.io/config.tags-count: "2500"
+    factory.io/config.screens-count: "45"
+    factory.io/config.alarm-classes: "8"
+
+    # Communication Configuration
+    factory.io/config.plc-connection: "plc-line-01-main"
+    factory.io/config.protocol: "S7-1500 Optimized"
+    factory.io/config.update-rate-ms: "100"
+    factory.io/config.historian-logging: "true"
+
+    # Physical Configuration
+    factory.io/config.mounting: "panel-mount"
+    factory.io/config.protection-rating: "IP65 front"
+    factory.io/config.operating-temp: "0C to 50C"
+
+  tags:
+    - ot-equipment
+    - hmi
+    - siemens
+    - comfort-panel
+    - operator-interface
+    - touchscreen
+
+spec:
+  type: HMI
+  lifecycle: production
+  owner: team-automation-engineering
+  system: production-line-01-control
+
+  zone: zone-l1-control
+  building: Plant-A
+  floor: 1
+  space: production-line-01
+  ipAddress: "10.50.1.20"
+  manufacturer: Siemens
+  model: SIMATIC HMI TP1900 Comfort
+  firmware: "V17.0 Update 4"
+  criticality: HIGH
+
+  expectedConfig:
+    screenSize: 19 inch
+    resolution: 1920x1080
+    runtimeSoftware: WinCC Comfort V17
+    projectName: Line01_HMI_Main
+    projectVersion: "3.5.2"
+    tagsCount: 2500
+    updateRateMs: 100
+
+  dependsOn:
+    - component:factory-ot/plc-line-01-main
+    - component:factory-network/access-switch-line-01
+  dependencyOf:
+    - component:factory-scada/scada-web-frontend
+
+---
+# Allen-Bradley PanelView HMI
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: hmi-packaging-01
+  namespace: factory-ot
+  title: HMI Packaging Station 01
+  description: PanelView Plus HMI for packaging station operations
+  labels:
+    asset-class: ot-equipment
+    asset-type: hmi
+    environment: production
+    station: packaging
+  annotations:
+    isa95.io/zone: zone-l1-control
+    isa95.io/level: L1
+
+    network.io/ip-address: "10.50.3.20"
+    network.io/mac-address: "00:00:BC:AB:03:20"
+    network.io/vlan: "VLAN-153"
+
+    factory.io/building: Plant-A
+    factory.io/floor: "1"
+    factory.io/space: packaging-area
+    factory.io/manufacturer: Rockwell Automation
+    factory.io/model: PanelView Plus 7 2711P-T15C22D9P
+    factory.io/serial-number: AB-PV7-00054321
+    factory.io/firmware: "V12.0"
+    factory.io/criticality: HIGH
+
+    factory.io/config.screen-size: "15 inch"
+    factory.io/config.resolution: "1024x768"
+    factory.io/config.touch-type: "resistive"
+    factory.io/config.runtime-software: "FactoryTalk View ME V12"
+    factory.io/config.project-name: "Packaging_HMI"
+    factory.io/config.project-version: "2.3.1"
+    factory.io/config.plc-connection: "plc-packaging-01"
+    factory.io/config.protocol: "EtherNet/IP"
+
+  tags:
+    - ot-equipment
+    - hmi
+    - allen-bradley
+    - panelview
+    - factorytalk
+
+spec:
+  type: HMI
+  lifecycle: production
+  owner: team-automation-engineering
+  system: packaging-control
+
+  zone: zone-l1-control
+  building: Plant-A
+  floor: 1
+  space: packaging-area
+  ipAddress: "10.50.3.20"
+  manufacturer: Rockwell Automation
+  model: PanelView Plus 7 2711P-T15C22D9P
+  firmware: "V12.0"
+  criticality: HIGH
+
+  expectedConfig:
+    screenSize: 15 inch
+    runtimeSoftware: FactoryTalk View ME V12
+    projectName: Packaging_HMI
+    projectVersion: "2.3.1"
+    protocol: EtherNet/IP
+
+  dependsOn:
+    - component:factory-ot/plc-packaging-01
+    - component:factory-network/access-switch-packaging
+
+---
+# Mobile HMI Terminal
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: hmi-mobile-terminal-01
+  namespace: factory-ot
+  title: Mobile HMI Terminal 01
+  description: Wireless mobile HMI for maintenance and setup operations
+  labels:
+    asset-class: ot-equipment
+    asset-type: hmi
+    environment: production
+    form-factor: mobile
+  annotations:
+    isa95.io/zone: zone-l1-control
+    isa95.io/level: L1
+
+    network.io/ip-address: "10.50.1.50"
+    network.io/mac-address: "00:0C:29:AB:01:50"
+    network.io/vlan: "VLAN-150"
+
+    factory.io/building: Plant-A
+    factory.io/manufacturer: Siemens
+    factory.io/model: SIMATIC HMI KTP Mobile 277F IWLAN
+    factory.io/serial-number: S C-KTP277F-5678
+    factory.io/firmware: "V17.0"
+    factory.io/criticality: MEDIUM
+
+    factory.io/config.screen-size: "7 inch"
+    factory.io/config.resolution: "800x480"
+    factory.io/config.wireless: "IWLAN 802.11ac"
+    factory.io/config.battery-runtime-hours: "8"
+    factory.io/config.protection-rating: "IP65"
+    factory.io/config.emergency-stop: "integrated"
+    factory.io/config.enabling-switch: "3-position"
+
+    # Profisafe Configuration
+    factory.io/config.profisafe-enabled: "true"
+    factory.io/config.f-address: "50"
+    factory.io/config.safe-stop-functions: "STO,SS1,SS2"
+
+  tags:
+    - ot-equipment
+    - hmi
+    - mobile
+    - wireless
+    - safety
+    - profisafe
+
+spec:
+  type: HMI
+  lifecycle: production
+  owner: team-maintenance
+  system: mobile-operations
+
+  zone: zone-l1-control
+  building: Plant-A
+  ipAddress: "10.50.1.50"
+  manufacturer: Siemens
+  model: SIMATIC HMI KTP Mobile 277F IWLAN
+  firmware: "V17.0"
+  criticality: MEDIUM
+
+  expectedConfig:
+    wireless: IWLAN 802.11ac
+    emergencyStop: integrated
+    enablingSwitch: 3-position
+    profisafeEnabled: true
+    safeStopFunctions:
+      - STO
+      - SS1
+      - SS2
+
+  dependsOn:
+    - component:factory-ot/plc-line-01-main
+    - component:factory-ot/plc-safety-line-01
+    - component:factory-network/access-point-line-01
+
+---
+# Industrial PC HMI
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: hmi-ipc-supervisory-01
+  namespace: factory-ot
+  title: Supervisory IPC HMI Station 01
+  description: Industrial PC-based supervisory HMI workstation
+  labels:
+    asset-class: ot-equipment
+    asset-type: hmi
+    environment: production
+    form-factor: ipc
+    role: supervisory
+  annotations:
+    isa95.io/zone: zone-l2-supervisory
+    isa95.io/level: L2
+
+    network.io/ip-address: "10.50.1.30"
+    network.io/mac-address: "00:0C:29:AB:01:30"
+    network.io/vlan: "VLAN-150"
+
+    factory.io/building: Plant-A
+    factory.io/floor: "1"
+    factory.io/space: control-room-line-01
+    factory.io/manufacturer: Siemens
+    factory.io/model: SIMATIC IPC677E
+    factory.io/serial-number: S C-IPC677E-9012
+    factory.io/firmware: "BIOS V2.0"
+    factory.io/criticality: HIGH
+
+    factory.io/config.cpu: "Intel Core i7-10700E"
+    factory.io/config.memory-gb: "32"
+    factory.io/config.storage: "512GB NVMe SSD (RAID1)"
+    factory.io/config.os: "Windows 10 IoT Enterprise LTSC 2021"
+    factory.io/config.displays: "2"
+    factory.io/config.display-size: "24 inch each"
+
+    factory.io/config.runtime-software: "WinCC Professional V17"
+    factory.io/config.project-name: "Line01_Supervisory"
+    factory.io/config.project-version: "4.0.1"
+    factory.io/config.redundancy: "hot-standby"
+    factory.io/config.redundancy-partner: "hmi-ipc-supervisory-02"
+
+  tags:
+    - ot-equipment
+    - hmi
+    - ipc
+    - supervisory
+    - wincc
+    - redundant
+
+spec:
+  type: HMI
+  lifecycle: production
+  owner: team-automation-engineering
+  system: production-line-01-supervisory
+
+  zone: zone-l2-supervisory
+  building: Plant-A
+  floor: 1
+  space: control-room-line-01
+  ipAddress: "10.50.1.30"
+  manufacturer: Siemens
+  model: SIMATIC IPC677E
+  criticality: HIGH
+
+  expectedConfig:
+    cpu: Intel Core i7-10700E
+    memoryGB: 32
+    os: Windows 10 IoT Enterprise LTSC 2021
+    runtimeSoftware: WinCC Professional V17
+    projectName: Line01_Supervisory
+    projectVersion: "4.0.1"
+    redundancy: hot-standby
+
+  dependsOn:
+    - component:factory-ot/plc-line-01-main
+    - component:factory-ot/plc-safety-line-01
+    - component:factory-network/access-switch-line-01
+  dependencyOf:
+    - component:factory-compute/vm-scada-server-01

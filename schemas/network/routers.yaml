@@ -1,0 +1,218 @@
+# =============================================================================
+# NETWORK ROUTERS - Backstage Catalog Schema for Factory Digital Twin
+# =============================================================================
+# File: schemas/network/routers.yaml
+# Purpose: Define network routers in the factory environment
+# ISA-95 Level: Typically L3-L4 (routing between zones)
+# =============================================================================
+
+---
+# Core Router - Factory WAN
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: router-wan-primary
+  namespace: factory-network
+  title: WAN Router Primary
+  description: Primary WAN router connecting factory to corporate network
+  labels:
+    asset-class: network
+    asset-type: router
+    environment: production
+    role: wan-edge
+  annotations:
+    isa95.io/zone: zone-l4-erp
+    isa95.io/level: L4
+
+    network.io/ip-address: "10.0.0.1"
+    network.io/mac-address: "00:1A:2B:3C:5D:01"
+    network.io/vlan: "VLAN-1"
+
+    factory.io/building: Plant-A
+    factory.io/floor: "1"
+    factory.io/space: server-room-b2
+    factory.io/manufacturer: Cisco
+    factory.io/model: ISR-4451-X
+    factory.io/serial-number: FGL2145M890
+    factory.io/firmware: "17.3.4a"
+    factory.io/criticality: CRITICAL
+    factory.io/maintenance-window: "Sunday 00:00-04:00 UTC"
+
+    # WAN Configuration
+    factory.io/config.wan-interfaces: "2"
+    factory.io/config.wan-bandwidth-primary: "1Gbps"
+    factory.io/config.wan-bandwidth-backup: "500Mbps"
+    factory.io/config.bgp-enabled: "true"
+    factory.io/config.bgp-asn: "65001"
+    factory.io/config.ipsec-tunnels: "3"
+    factory.io/config.qos-enabled: "true"
+    factory.io/config.netflow-enabled: "true"
+
+  tags:
+    - network
+    - router
+    - wan
+    - edge
+    - bgp
+    - critical
+
+spec:
+  type: Router
+  lifecycle: production
+  owner: team-network-infrastructure
+  system: factory-wan-infrastructure
+
+  zone: zone-l4-erp
+  building: Plant-A
+  space: server-room-b2
+  ipAddress: "10.0.0.1"
+  manufacturer: Cisco
+  model: ISR-4451-X
+  firmware: "17.3.4a"
+  criticality: CRITICAL
+
+  expectedConfig:
+    wanInterfaces: 2
+    bgpEnabled: true
+    bgpASN: 65001
+    qosEnabled: true
+
+  dependsOn:
+    - component:default/ups-datacenter-01
+  dependencyOf:
+    - component:factory-network/core-switch-mfg-01
+    - component:factory-network/firewall-perimeter-01
+
+---
+# OT DMZ Router
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: router-ot-dmz
+  namespace: factory-network
+  title: OT DMZ Router
+  description: Router providing DMZ connectivity between IT and OT networks
+  labels:
+    asset-class: network
+    asset-type: router
+    environment: production
+    role: dmz
+    zone-boundary: it-ot
+  annotations:
+    isa95.io/zone: zone-l3-mes
+    isa95.io/level: L3
+
+    network.io/ip-address: "10.20.0.1"
+    network.io/mac-address: "00:1A:2B:3C:5D:10"
+    network.io/vlan: "VLAN-200"
+
+    factory.io/building: Plant-A
+    factory.io/floor: "1"
+    factory.io/space: network-closet-main
+    factory.io/manufacturer: Cisco
+    factory.io/model: ISR-4331
+    factory.io/serial-number: FGL2145M891
+    factory.io/firmware: "17.3.4a"
+    factory.io/criticality: CRITICAL
+
+    # DMZ/Security Configuration
+    factory.io/config.zone-based-firewall: "true"
+    factory.io/config.acls-applied: "15"
+    factory.io/config.inspection-enabled: "true"
+    factory.io/config.logging-enabled: "true"
+    factory.io/config.ntp-servers: "10.0.0.10,10.0.0.11"
+
+  tags:
+    - network
+    - router
+    - dmz
+    - ot-it-boundary
+    - security
+
+spec:
+  type: Router
+  lifecycle: production
+  owner: team-ot-security
+  system: factory-ot-dmz
+
+  zone: zone-l3-mes
+  building: Plant-A
+  ipAddress: "10.20.0.1"
+  manufacturer: Cisco
+  model: ISR-4331
+  firmware: "17.3.4a"
+  criticality: CRITICAL
+
+  dependsOn:
+    - component:factory-network/core-switch-mfg-01
+    - component:factory-network/firewall-ot-dmz
+  dependencyOf:
+    - component:factory-network/agg-switch-ot-01
+
+---
+# Industrial Router - Remote Site
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: router-remote-site-01
+  namespace: factory-network
+  title: Industrial Router Remote Site 01
+  description: Industrial router for remote pump station connectivity
+  labels:
+    asset-class: network
+    asset-type: router
+    environment: production
+    role: remote-site
+    industrial: true
+  annotations:
+    isa95.io/zone: zone-l1-control
+    isa95.io/level: L1
+
+    network.io/ip-address: "10.60.1.1"
+    network.io/mac-address: "00:1A:2B:3C:5D:20"
+    network.io/vlan: "VLAN-601"
+
+    factory.io/building: Remote-Pump-Station-01
+    factory.io/manufacturer: Cisco
+    factory.io/model: IR1101-K9
+    factory.io/serial-number: FGL2145M892
+    factory.io/firmware: "17.4.1"
+    factory.io/criticality: HIGH
+
+    # Industrial/Remote Configuration
+    factory.io/config.cellular-backup: "true"
+    factory.io/config.cellular-carrier: "Verizon"
+    factory.io/config.ipsec-to-hq: "true"
+    factory.io/config.extended-temp-rated: "true"
+    factory.io/config.conformal-coating: "true"
+    factory.io/config.serial-ports: "2"
+    factory.io/config.modbus-gateway: "true"
+
+  tags:
+    - network
+    - router
+    - industrial
+    - remote-site
+    - cellular
+
+spec:
+  type: Router
+  lifecycle: production
+  owner: team-remote-operations
+  system: remote-sites-network
+
+  zone: zone-l1-control
+  building: Remote-Pump-Station-01
+  ipAddress: "10.60.1.1"
+  manufacturer: Cisco
+  model: IR1101-K9
+  firmware: "17.4.1"
+  criticality: HIGH
+
+  expectedConfig:
+    cellularBackup: true
+    ipsecEnabled: true
+    modbusGateway: true
+
+  dependsOn:
+    - component:factory-network/router-wan-primary

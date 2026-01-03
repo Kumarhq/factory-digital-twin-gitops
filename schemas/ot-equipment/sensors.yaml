@@ -1,0 +1,438 @@
+# =============================================================================
+# SENSORS AND INSTRUMENTATION - Backstage Catalog Schema
+# =============================================================================
+# File: schemas/ot-equipment/sensors.yaml
+# Purpose: Define sensors, transmitters, and field instruments
+# ISA-95 Level: L0 (Physical Process)
+# =============================================================================
+
+---
+# Temperature Transmitter
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: sensor-temp-reactor-01-tt-101
+  namespace: factory-ot
+  title: Temperature Transmitter TT-101
+  description: RTD temperature transmitter for Reactor 01 vessel temperature
+  labels:
+    asset-class: ot-equipment
+    asset-type: sensor
+    sensor-type: temperature
+    environment: production
+    p-and-id: reactor-01
+  annotations:
+    isa95.io/zone: zone-l0-process
+    isa95.io/level: L0
+
+    # HART/4-20mA Configuration
+    ot.io/modbus-address: "101"
+    ot.io/hart-address: "1"
+    ot.io/analog-signal: "4-20mA"
+
+    factory.io/building: Plant-A
+    factory.io/floor: "1"
+    factory.io/space: reactor-area
+    factory.io/position: '{"x": 15.2, "y": 8.5, "z": 3.0}'
+    factory.io/manufacturer: Emerson
+    factory.io/model: Rosemount 3144P
+    factory.io/serial-number: 14523456789
+    factory.io/firmware: "V7.3"
+    factory.io/criticality: HIGH
+
+    # Instrument Configuration
+    factory.io/config.tag-number: "TT-101"
+    factory.io/config.service: "Reactor Vessel Temperature"
+    factory.io/config.sensor-type: "RTD Pt100"
+    factory.io/config.sensor-class: "Class A"
+    factory.io/config.range-low: "0"
+    factory.io/config.range-high: "200"
+    factory.io/config.range-units: "degC"
+    factory.io/config.output-low: "4"
+    factory.io/config.output-high: "20"
+    factory.io/config.output-units: "mA"
+
+    # Process Integration
+    factory.io/config.plc-input: "plc-line-01-main:AI0"
+    factory.io/config.historian-tag: "REACTOR01.TT101.PV"
+    factory.io/config.alarm-high: "180"
+    factory.io/config.alarm-highHigh: "190"
+    factory.io/config.alarm-low: "20"
+
+    # Calibration
+    factory.io/config.calibration-date: "2025-06-15"
+    factory.io/config.calibration-due: "2026-06-15"
+    factory.io/config.calibration-interval: "12 months"
+
+  tags:
+    - ot-equipment
+    - sensor
+    - temperature
+    - rtd
+    - hart
+    - emerson
+
+spec:
+  type: Sensor
+  lifecycle: production
+  owner: team-instrumentation
+  system: reactor-01-instrumentation
+
+  zone: zone-l0-process
+  building: Plant-A
+  floor: 1
+  space: reactor-area
+  modbusAddress: 101
+  manufacturer: Emerson
+  model: Rosemount 3144P
+  firmware: "V7.3"
+  criticality: HIGH
+
+  expectedConfig:
+    tagNumber: TT-101
+    sensorType: RTD Pt100
+    rangeLow: 0
+    rangeHigh: 200
+    rangeUnits: degC
+    outputLow: 4
+    outputHigh: 20
+    alarmHigh: 180
+    alarmHighHigh: 190
+
+  dependsOn:
+    - component:factory-ot/plc-line-01-main
+
+---
+# Pressure Transmitter
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: sensor-pressure-reactor-01-pt-102
+  namespace: factory-ot
+  title: Pressure Transmitter PT-102
+  description: Differential pressure transmitter for Reactor 01 vessel pressure
+  labels:
+    asset-class: ot-equipment
+    asset-type: sensor
+    sensor-type: pressure
+    environment: production
+    p-and-id: reactor-01
+    sil-rated: true
+  annotations:
+    isa95.io/zone: zone-l0-process
+    isa95.io/level: L0
+
+    ot.io/hart-address: "2"
+    ot.io/analog-signal: "4-20mA"
+
+    factory.io/building: Plant-A
+    factory.io/floor: "1"
+    factory.io/space: reactor-area
+    factory.io/position: '{"x": 15.5, "y": 8.5, "z": 2.5}'
+    factory.io/manufacturer: Emerson
+    factory.io/model: Rosemount 3051S
+    factory.io/serial-number: 14598765432
+    factory.io/firmware: "V11.2"
+    factory.io/criticality: CRITICAL
+
+    factory.io/config.tag-number: "PT-102"
+    factory.io/config.service: "Reactor Vessel Pressure"
+    factory.io/config.sensor-type: "Capacitive"
+    factory.io/config.range-low: "0"
+    factory.io/config.range-high: "10"
+    factory.io/config.range-units: "bar"
+    factory.io/config.accuracy: "0.025%"
+
+    # SIL Configuration
+    factory.io/config.sil-capable: "SIL2"
+    factory.io/config.sil-certificate: "TUV-123456"
+    factory.io/config.proof-test-interval: "24 months"
+    factory.io/config.pfd: "1.2E-3"
+
+    factory.io/config.plc-input: "plc-safety-line-01:F-AI0"
+    factory.io/config.alarm-high: "8.5"
+    factory.io/config.alarm-highHigh: "9.0"
+    factory.io/config.interlock: "ESD-001"
+
+  tags:
+    - ot-equipment
+    - sensor
+    - pressure
+    - hart
+    - sil2
+    - safety
+
+spec:
+  type: Sensor
+  lifecycle: production
+  owner: team-instrumentation
+  system: reactor-01-instrumentation
+
+  zone: zone-l0-process
+  building: Plant-A
+  floor: 1
+  space: reactor-area
+  manufacturer: Emerson
+  model: Rosemount 3051S
+  firmware: "V11.2"
+  criticality: CRITICAL
+
+  expectedConfig:
+    tagNumber: PT-102
+    sensorType: Capacitive
+    rangeLow: 0
+    rangeHigh: 10
+    rangeUnits: bar
+    accuracy: "0.025%"
+    silCapable: SIL2
+    proofTestInterval: 24 months
+
+  dependsOn:
+    - component:factory-ot/plc-safety-line-01
+
+---
+# Flow Meter
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: sensor-flow-line-01-ft-201
+  namespace: factory-ot
+  title: Flow Transmitter FT-201
+  description: Coriolis mass flow meter for main process feed
+  labels:
+    asset-class: ot-equipment
+    asset-type: sensor
+    sensor-type: flow
+    environment: production
+    p-and-id: process-feed
+  annotations:
+    isa95.io/zone: zone-l0-process
+    isa95.io/level: L0
+
+    ot.io/modbus-address: "201"
+    ot.io/hart-address: "3"
+
+    factory.io/building: Plant-A
+    factory.io/floor: "1"
+    factory.io/space: pipe-rack-area
+    factory.io/manufacturer: Endress+Hauser
+    factory.io/model: Promass F 300
+    factory.io/serial-number: EH-F300-2345678
+    factory.io/firmware: "V3.05.00"
+    factory.io/criticality: HIGH
+
+    factory.io/config.tag-number: "FT-201"
+    factory.io/config.service: "Main Process Feed Flow"
+    factory.io/config.sensor-type: "Coriolis"
+    factory.io/config.pipe-size: "DN80"
+    factory.io/config.range-low: "0"
+    factory.io/config.range-high: "50000"
+    factory.io/config.range-units: "kg/h"
+    factory.io/config.accuracy: "0.1%"
+
+    # Multi-variable outputs
+    factory.io/config.outputs: "mass-flow,density,temperature"
+    factory.io/config.density-range: "500-1500 kg/m3"
+    factory.io/config.temp-range: "-50 to 200 degC"
+
+    factory.io/config.plc-input: "plc-line-01-main:AI10"
+    factory.io/config.historian-tag: "LINE01.FT201.PV"
+    factory.io/config.totalizer-enabled: "true"
+
+  tags:
+    - ot-equipment
+    - sensor
+    - flow
+    - coriolis
+    - multivariable
+    - endress-hauser
+
+spec:
+  type: Sensor
+  lifecycle: production
+  owner: team-instrumentation
+  system: process-feed-instrumentation
+
+  zone: zone-l0-process
+  building: Plant-A
+  floor: 1
+  space: pipe-rack-area
+  modbusAddress: 201
+  manufacturer: Endress+Hauser
+  model: Promass F 300
+  firmware: "V3.05.00"
+  criticality: HIGH
+
+  expectedConfig:
+    tagNumber: FT-201
+    sensorType: Coriolis
+    pipeSize: DN80
+    rangeLow: 0
+    rangeHigh: 50000
+    rangeUnits: kg/h
+    accuracy: "0.1%"
+    totalizerEnabled: true
+
+  dependsOn:
+    - component:factory-ot/plc-line-01-main
+
+---
+# Level Radar Transmitter
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: sensor-level-tank-01-lt-301
+  namespace: factory-ot
+  title: Level Transmitter LT-301
+  description: Radar level transmitter for storage Tank 01
+  labels:
+    asset-class: ot-equipment
+    asset-type: sensor
+    sensor-type: level
+    environment: production
+    p-and-id: tank-farm
+  annotations:
+    isa95.io/zone: zone-l0-process
+    isa95.io/level: L0
+
+    ot.io/modbus-address: "301"
+    ot.io/hart-address: "4"
+
+    factory.io/building: Tank-Farm
+    factory.io/space: tank-01
+    factory.io/position: '{"x": 0.0, "y": 0.0, "z": 12.0}'
+    factory.io/manufacturer: VEGA
+    factory.io/model: VEGAPULS 64
+    factory.io/serial-number: VEGA-64-9876543
+    factory.io/firmware: "V1.32"
+    factory.io/criticality: HIGH
+
+    factory.io/config.tag-number: "LT-301"
+    factory.io/config.service: "Storage Tank 01 Level"
+    factory.io/config.sensor-type: "Radar 80GHz"
+    factory.io/config.range-low: "0"
+    factory.io/config.range-high: "10"
+    factory.io/config.range-units: "m"
+    factory.io/config.accuracy: "2mm"
+
+    factory.io/config.tank-height: "10"
+    factory.io/config.tank-diameter: "8"
+    factory.io/config.product: "Process Fluid"
+    factory.io/config.dielectric-constant: "2.0"
+
+    factory.io/config.alarm-high: "9.0"
+    factory.io/config.alarm-highHigh: "9.5"
+    factory.io/config.alarm-low: "1.0"
+    factory.io/config.alarm-lowLow: "0.5"
+
+  tags:
+    - ot-equipment
+    - sensor
+    - level
+    - radar
+    - tank
+    - vega
+
+spec:
+  type: Sensor
+  lifecycle: production
+  owner: team-instrumentation
+  system: tank-farm-instrumentation
+
+  zone: zone-l0-process
+  building: Tank-Farm
+  space: tank-01
+  modbusAddress: 301
+  manufacturer: VEGA
+  model: VEGAPULS 64
+  firmware: "V1.32"
+  criticality: HIGH
+
+  expectedConfig:
+    tagNumber: LT-301
+    sensorType: Radar 80GHz
+    rangeLow: 0
+    rangeHigh: 10
+    rangeUnits: m
+    accuracy: 2mm
+    tankHeight: 10
+    tankDiameter: 8
+
+  dependsOn:
+    - component:factory-ot/plc-remote-io-tank-farm
+
+---
+# Vibration Sensor
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: sensor-vibration-motor-01-vt-401
+  namespace: factory-ot
+  title: Vibration Transmitter VT-401
+  description: Wireless vibration sensor for Motor 01 condition monitoring
+  labels:
+    asset-class: ot-equipment
+    asset-type: sensor
+    sensor-type: vibration
+    environment: production
+    condition-monitoring: true
+  annotations:
+    isa95.io/zone: zone-l0-process
+    isa95.io/level: L0
+
+    ot.io/wireless-protocol: "WirelessHART"
+    ot.io/wireless-network: "wirelesshart-gw-01"
+
+    factory.io/building: Plant-A
+    factory.io/floor: "1"
+    factory.io/space: motor-room
+    factory.io/manufacturer: Emerson
+    factory.io/model: AMS 9420
+    factory.io/serial-number: 14512345678
+    factory.io/firmware: "V2.1.0"
+    factory.io/criticality: MEDIUM
+
+    factory.io/config.tag-number: "VT-401"
+    factory.io/config.service: "Motor 01 Vibration Monitoring"
+    factory.io/config.sensor-type: "Piezoelectric Accelerometer"
+    factory.io/config.measurement-range: "0-25.4 mm/s RMS"
+    factory.io/config.frequency-range: "10-1000 Hz"
+
+    factory.io/config.wireless-update-rate: "60s"
+    factory.io/config.battery-life-years: "5"
+    factory.io/config.battery-status: "OK"
+
+    factory.io/config.alarm-velocity-high: "7.1"
+    factory.io/config.alarm-velocity-highHigh: "11.2"
+    factory.io/config.alarm-units: "mm/s"
+
+  tags:
+    - ot-equipment
+    - sensor
+    - vibration
+    - wireless
+    - condition-monitoring
+    - wirelesshart
+
+spec:
+  type: Sensor
+  lifecycle: production
+  owner: team-reliability-engineering
+  system: condition-monitoring-system
+
+  zone: zone-l0-process
+  building: Plant-A
+  floor: 1
+  space: motor-room
+  manufacturer: Emerson
+  model: AMS 9420
+  firmware: "V2.1.0"
+  criticality: MEDIUM
+
+  expectedConfig:
+    tagNumber: VT-401
+    sensorType: Piezoelectric Accelerometer
+    measurementRange: 0-25.4 mm/s RMS
+    frequencyRange: 10-1000 Hz
+    wirelessUpdateRate: 60s
+    batteryLifeYears: 5

@@ -1,0 +1,359 @@
+# =============================================================================
+# PROGRAMMABLE LOGIC CONTROLLERS (PLCs) - Backstage Catalog Schema
+# =============================================================================
+# File: schemas/ot-equipment/plcs.yaml
+# Purpose: Define PLCs in the factory environment
+# ISA-95 Level: L0/L1 (Basic Control)
+# =============================================================================
+
+---
+# Main Production Line PLC
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: plc-line-01-main
+  namespace: factory-ot
+  title: PLC Production Line 01 Main Controller
+  description: Main PLC controlling Production Line 01 operations
+  labels:
+    asset-class: ot-equipment
+    asset-type: plc
+    environment: production
+    production-line: line-01
+    safety-related: false
+  annotations:
+    isa95.io/zone: zone-l1-control
+    isa95.io/level: L1
+
+    network.io/ip-address: "10.50.1.10"
+    network.io/mac-address: "00:0C:29:AB:01:10"
+    network.io/vlan: "VLAN-150"
+
+    # OT Protocol Endpoints
+    ot.io/opcua-endpoint: "opc.tcp://10.50.1.10:4840"
+    ot.io/modbus-address: "1"
+    ot.io/mqtt-topic: "factory/line-01/plc-main"
+
+    factory.io/building: Plant-A
+    factory.io/floor: "1"
+    factory.io/space: production-line-01
+    factory.io/position: '{"x": 25.5, "y": 10.2, "z": 0.0}'
+    factory.io/manufacturer: Siemens
+    factory.io/model: S7-1500 CPU 1516-3 PN/DP
+    factory.io/serial-number: S C-X4UA12345678
+    factory.io/firmware: "V2.9.4"
+    factory.io/criticality: CRITICAL
+    factory.io/maintenance-window: "Sunday 06:00-10:00 UTC"
+
+    # PLC-Specific Configuration
+    factory.io/config.program-name: "Line01_Main_v3.2"
+    factory.io/config.program-version: "3.2.1"
+    factory.io/config.program-checksum: "a1b2c3d4e5f6"
+    factory.io/config.memory-work-mb: "4"
+    factory.io/config.memory-load-mb: "32"
+    factory.io/config.cycle-time-ms: "10"
+    factory.io/config.io-modules: "12"
+    factory.io/config.digital-inputs: "256"
+    factory.io/config.digital-outputs: "128"
+    factory.io/config.analog-inputs: "64"
+    factory.io/config.analog-outputs: "32"
+
+    # Communication Configuration
+    factory.io/config.profinet-enabled: "true"
+    factory.io/config.profinet-devices: "24"
+    factory.io/config.opcua-enabled: "true"
+    factory.io/config.opcua-security: "Basic256Sha256"
+    factory.io/config.webserver-enabled: "true"
+
+    # Safety Configuration
+    factory.io/config.failsafe-cpu: "false"
+    factory.io/config.safety-program: "N/A"
+
+  tags:
+    - ot-equipment
+    - plc
+    - siemens
+    - s7-1500
+    - profinet
+    - critical
+
+spec:
+  type: PLC
+  lifecycle: production
+  owner: team-automation-engineering
+  system: production-line-01-control
+
+  zone: zone-l1-control
+  building: Plant-A
+  floor: 1
+  space: production-line-01
+  ipAddress: "10.50.1.10"
+  opcuaEndpoint: "opc.tcp://10.50.1.10:4840"
+  modbusAddress: 1
+  manufacturer: Siemens
+  model: S7-1500 CPU 1516-3 PN/DP
+  firmware: "V2.9.4"
+  criticality: CRITICAL
+
+  expectedConfig:
+    programName: Line01_Main_v3.2
+    programVersion: "3.2.1"
+    programChecksum: a1b2c3d4e5f6
+    cycleTimeMs: 10
+    profinetEnabled: true
+    opcuaEnabled: true
+    opcuaSecurity: Basic256Sha256
+
+  dependsOn:
+    - component:factory-network/access-switch-line-01
+    - component:factory-network/firewall-cell-line-01
+  dependencyOf:
+    - component:factory-ot/hmi-line-01-station-01
+    - component:factory-compute/vm-scada-server-01
+
+---
+# Safety PLC
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: plc-safety-line-01
+  namespace: factory-ot
+  title: Safety PLC Production Line 01
+  description: Safety PLC (F-CPU) for Production Line 01 emergency systems
+  labels:
+    asset-class: ot-equipment
+    asset-type: plc
+    environment: production
+    production-line: line-01
+    safety-related: true
+    sil-rating: SIL3
+  annotations:
+    isa95.io/zone: zone-l0-process
+    isa95.io/level: L0
+
+    network.io/ip-address: "10.50.1.11"
+    network.io/mac-address: "00:0C:29:AB:01:11"
+    network.io/vlan: "VLAN-150"
+
+    ot.io/opcua-endpoint: "opc.tcp://10.50.1.11:4840"
+    ot.io/profisafe-address: "1"
+
+    factory.io/building: Plant-A
+    factory.io/floor: "1"
+    factory.io/space: production-line-01
+    factory.io/manufacturer: Siemens
+    factory.io/model: S7-1500F CPU 1517F-3 PN/DP
+    factory.io/serial-number: S C-X4UA98765432
+    factory.io/firmware: "V2.9.4"
+    factory.io/criticality: CRITICAL
+
+    # Safety-Specific Configuration
+    factory.io/config.failsafe-cpu: "true"
+    factory.io/config.safety-program: "Line01_Safety_v2.1"
+    factory.io/config.safety-program-version: "2.1.0"
+    factory.io/config.safety-checksum: "f1e2d3c4b5a6"
+    factory.io/config.sil-level: "SIL3"
+    factory.io/config.pl-level: "PLe"
+    factory.io/config.category: "CAT4"
+    factory.io/config.profisafe-enabled: "true"
+    factory.io/config.f-io-modules: "6"
+    factory.io/config.f-di: "48"
+    factory.io/config.f-do: "32"
+    factory.io/config.f-signature: "2A4B6C8D"
+
+    # Watchdog and Monitoring
+    factory.io/config.watchdog-time-ms: "100"
+    factory.io/config.f-monitoring-time-ms: "150"
+
+  tags:
+    - ot-equipment
+    - plc
+    - safety
+    - siemens
+    - f-cpu
+    - sil3
+    - profisafe
+
+spec:
+  type: PLC
+  lifecycle: production
+  owner: team-safety-engineering
+  system: production-line-01-safety
+
+  zone: zone-l0-process
+  building: Plant-A
+  floor: 1
+  space: production-line-01
+  ipAddress: "10.50.1.11"
+  opcuaEndpoint: "opc.tcp://10.50.1.11:4840"
+  manufacturer: Siemens
+  model: S7-1500F CPU 1517F-3 PN/DP
+  firmware: "V2.9.4"
+  criticality: CRITICAL
+
+  expectedConfig:
+    failsafeCPU: true
+    safetyProgram: Line01_Safety_v2.1
+    safetyProgramVersion: "2.1.0"
+    safetyChecksum: f1e2d3c4b5a6
+    silLevel: SIL3
+    profisafeEnabled: true
+
+  dependsOn:
+    - component:factory-network/access-switch-line-01
+  dependencyOf:
+    - component:factory-ot/plc-line-01-main
+    - component:factory-ot/e-stop-panel-line-01
+
+---
+# Allen-Bradley PLC
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: plc-packaging-01
+  namespace: factory-ot
+  title: PLC Packaging Station 01
+  description: Allen-Bradley PLC for packaging station control
+  labels:
+    asset-class: ot-equipment
+    asset-type: plc
+    environment: production
+    station: packaging
+  annotations:
+    isa95.io/zone: zone-l1-control
+    isa95.io/level: L1
+
+    network.io/ip-address: "10.50.3.10"
+    network.io/mac-address: "00:00:BC:AB:03:10"
+    network.io/vlan: "VLAN-153"
+
+    ot.io/ethernet-ip-slot: "0"
+    ot.io/cip-connection: "1756-EN2TR"
+
+    factory.io/building: Plant-A
+    factory.io/floor: "1"
+    factory.io/space: packaging-area
+    factory.io/manufacturer: Rockwell Automation
+    factory.io/model: ControlLogix 5580
+    factory.io/serial-number: AB-1756L85E-01234
+    factory.io/firmware: "V33.011"
+    factory.io/criticality: HIGH
+
+    factory.io/config.program-name: "Packaging_Main"
+    factory.io/config.program-version: "4.1.2"
+    factory.io/config.controller-memory-mb: "160"
+    factory.io/config.io-capacity: "128000"
+    factory.io/config.ethernet-ip-connections: "500"
+    factory.io/config.motion-axes: "16"
+    factory.io/config.studio-5000-version: "V33"
+
+  tags:
+    - ot-equipment
+    - plc
+    - allen-bradley
+    - controllogix
+    - ethernet-ip
+    - motion
+
+spec:
+  type: PLC
+  lifecycle: production
+  owner: team-automation-engineering
+  system: packaging-control
+
+  zone: zone-l1-control
+  building: Plant-A
+  floor: 1
+  space: packaging-area
+  ipAddress: "10.50.3.10"
+  manufacturer: Rockwell Automation
+  model: ControlLogix 5580
+  firmware: "V33.011"
+  criticality: HIGH
+
+  expectedConfig:
+    programName: Packaging_Main
+    programVersion: "4.1.2"
+    controllerMemoryMB: 160
+    ethernetIPConnections: 500
+    motionAxes: 16
+
+  dependsOn:
+    - component:factory-network/access-switch-packaging
+  dependencyOf:
+    - component:factory-ot/hmi-packaging-01
+    - component:factory-ot/robot-palletizer-01
+
+---
+# Modular PLC for Remote I/O
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: plc-remote-io-tank-farm
+  namespace: factory-ot
+  title: Remote I/O PLC Tank Farm
+  description: Distributed I/O controller for tank farm monitoring
+  labels:
+    asset-class: ot-equipment
+    asset-type: plc
+    environment: production
+    area: tank-farm
+    remote-io: true
+  annotations:
+    isa95.io/zone: zone-l0-process
+    isa95.io/level: L0
+
+    network.io/ip-address: "10.50.5.10"
+    network.io/mac-address: "00:0C:29:AB:05:10"
+    network.io/vlan: "VLAN-155"
+
+    ot.io/modbus-address: "10"
+    ot.io/mqtt-topic: "factory/tank-farm/plc"
+
+    factory.io/building: Tank-Farm
+    factory.io/manufacturer: Phoenix Contact
+    factory.io/model: PLCnext AXC F 2152
+    factory.io/serial-number: PC-2152-00012345
+    factory.io/firmware: "2023.0.6"
+    factory.io/criticality: HIGH
+
+    factory.io/config.axioline-modules: "8"
+    factory.io/config.total-io-points: "128"
+    factory.io/config.analog-inputs-4-20ma: "32"
+    factory.io/config.rtd-inputs: "16"
+    factory.io/config.hart-enabled: "true"
+    factory.io/config.explosion-proof: "Zone 2"
+
+  tags:
+    - ot-equipment
+    - plc
+    - phoenix-contact
+    - plcnext
+    - remote-io
+    - hazardous-area
+
+spec:
+  type: PLC
+  lifecycle: production
+  owner: team-process-engineering
+  system: tank-farm-control
+
+  zone: zone-l0-process
+  building: Tank-Farm
+  ipAddress: "10.50.5.10"
+  modbusAddress: 10
+  manufacturer: Phoenix Contact
+  model: PLCnext AXC F 2152
+  firmware: "2023.0.6"
+  criticality: HIGH
+
+  expectedConfig:
+    axiolineModules: 8
+    totalIOPoints: 128
+    hartEnabled: true
+    explosionProof: Zone 2
+
+  dependsOn:
+    - component:factory-network/router-remote-site-01
+  dependencyOf:
+    - component:factory-ot/plc-line-01-main

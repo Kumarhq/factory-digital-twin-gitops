@@ -1,0 +1,258 @@
+# =============================================================================
+# NETWORK FIREWALLS - Backstage Catalog Schema for Factory Digital Twin
+# =============================================================================
+# File: schemas/network/firewalls.yaml
+# Purpose: Define firewalls protecting factory network zones
+# ISA-95 Level: Zone boundaries (L2/L3, L3/L4, Perimeter)
+# =============================================================================
+
+---
+# Perimeter Firewall
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: firewall-perimeter-01
+  namespace: factory-network
+  title: Perimeter Firewall Primary
+  description: Primary perimeter firewall protecting factory from external threats
+  labels:
+    asset-class: network
+    asset-type: firewall
+    environment: production
+    role: perimeter
+    ha-pair: primary
+  annotations:
+    isa95.io/zone: zone-l5-enterprise
+    isa95.io/level: L5
+
+    network.io/ip-address: "10.0.0.254"
+    network.io/mac-address: "00:1A:2B:3C:6D:01"
+    network.io/vlan: "VLAN-1"
+
+    factory.io/building: Plant-A
+    factory.io/floor: "-2"
+    factory.io/space: server-room-b2
+    factory.io/manufacturer: Palo Alto Networks
+    factory.io/model: PA-5220
+    factory.io/serial-number: 013201012345
+    factory.io/firmware: "10.2.3"
+    factory.io/criticality: CRITICAL
+    factory.io/maintenance-window: "Sunday 00:00-02:00 UTC"
+
+    # Security Configuration
+    factory.io/config.ha-mode: "active-passive"
+    factory.io/config.ha-peer: "firewall-perimeter-02"
+    factory.io/config.threat-prevention: "enabled"
+    factory.io/config.url-filtering: "enabled"
+    factory.io/config.ssl-decryption: "enabled"
+    factory.io/config.wildfire: "enabled"
+    factory.io/config.globalprotect: "enabled"
+    factory.io/config.zones: "trust,untrust,dmz,guest"
+    factory.io/config.security-rules: "247"
+    factory.io/config.nat-rules: "35"
+
+    # Logging
+    factory.io/config.syslog-server: "10.0.10.50"
+    factory.io/config.panorama-managed: "true"
+    factory.io/config.panorama-server: "10.0.10.100"
+
+  tags:
+    - network
+    - firewall
+    - perimeter
+    - ngfw
+    - critical
+    - ha
+
+spec:
+  type: Firewall
+  lifecycle: production
+  owner: team-network-security
+  system: factory-perimeter-security
+
+  zone: zone-l5-enterprise
+  building: Plant-A
+  floor: -2
+  space: server-room-b2
+  ipAddress: "10.0.0.254"
+  manufacturer: Palo Alto Networks
+  model: PA-5220
+  firmware: "10.2.3"
+  criticality: CRITICAL
+
+  expectedConfig:
+    haMode: active-passive
+    threatPrevention: enabled
+    urlFiltering: enabled
+    sslDecryption: enabled
+
+  dependsOn:
+    - component:default/ups-datacenter-01
+    - component:factory-network/router-wan-primary
+  dependencyOf:
+    - component:factory-network/core-switch-mfg-01
+
+---
+# OT DMZ Firewall
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: firewall-ot-dmz
+  namespace: factory-network
+  title: OT DMZ Firewall
+  description: Firewall protecting OT network from IT network - ISA-62443 compliant
+  labels:
+    asset-class: network
+    asset-type: firewall
+    environment: production
+    role: ot-dmz
+    isa-62443: compliant
+  annotations:
+    isa95.io/zone: zone-l3-mes
+    isa95.io/level: L3
+
+    network.io/ip-address: "10.20.0.254"
+    network.io/mac-address: "00:1A:2B:3C:6D:10"
+    network.io/vlan: "VLAN-200"
+
+    factory.io/building: Plant-A
+    factory.io/floor: "1"
+    factory.io/space: network-closet-main
+    factory.io/manufacturer: Fortinet
+    factory.io/model: FortiGate-200F
+    factory.io/serial-number: FG200F1234567890
+    factory.io/firmware: "7.2.4"
+    factory.io/criticality: CRITICAL
+
+    # OT Security Configuration
+    factory.io/config.ot-security-profile: "enabled"
+    factory.io/config.ics-signatures: "enabled"
+    factory.io/config.protocol-detection: "modbus,profinet,ethernet-ip,opc-ua"
+    factory.io/config.deep-packet-inspection: "industrial"
+    factory.io/config.asset-discovery: "passive"
+    factory.io/config.anomaly-detection: "enabled"
+    factory.io/config.security-zones: "it-dmz,ot-l3,ot-l2,ot-l1"
+    factory.io/config.security-policies: "156"
+
+    # ISA-62443 Compliance
+    factory.io/config.isa62443-sl: "SL2"
+    factory.io/config.conduit-policies: "12"
+
+  tags:
+    - network
+    - firewall
+    - ot-dmz
+    - industrial
+    - isa-62443
+    - critical
+
+spec:
+  type: Firewall
+  lifecycle: production
+  owner: team-ot-security
+  system: factory-ot-dmz
+
+  zone: zone-l3-mes
+  building: Plant-A
+  ipAddress: "10.20.0.254"
+  manufacturer: Fortinet
+  model: FortiGate-200F
+  firmware: "7.2.4"
+  criticality: CRITICAL
+
+  expectedConfig:
+    otSecurityProfile: enabled
+    icsSignatures: enabled
+    protocolDetection:
+      - modbus
+      - profinet
+      - ethernet-ip
+      - opc-ua
+    isa62443SL: SL2
+
+  dependsOn:
+    - component:factory-network/core-switch-mfg-01
+    - component:factory-network/router-ot-dmz
+  dependencyOf:
+    - component:factory-network/agg-switch-ot-01
+
+---
+# Cell/Area Firewall - Production Line
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: firewall-cell-line-01
+  namespace: factory-network
+  title: Cell Firewall Production Line 01
+  description: Industrial firewall protecting production line cell zone
+  labels:
+    asset-class: network
+    asset-type: firewall
+    environment: production
+    role: cell-zone
+    production-line: line-01
+    industrial: true
+  annotations:
+    isa95.io/zone: zone-l1-control
+    isa95.io/level: L1
+
+    network.io/ip-address: "10.50.1.254"
+    network.io/mac-address: "00:1A:2B:3C:6D:20"
+    network.io/vlan: "VLAN-150"
+
+    factory.io/building: Plant-A
+    factory.io/floor: "1"
+    factory.io/space: production-line-01
+    factory.io/manufacturer: Cisco
+    factory.io/model: ISA-3000-2C2F-K9
+    factory.io/serial-number: FCW2456M123
+    factory.io/firmware: "3.1.0"
+    factory.io/criticality: HIGH
+
+    # Industrial Firewall Config
+    factory.io/config.industrial-rated: "true"
+    factory.io/config.extended-temp: "-25C to 60C"
+    factory.io/config.din-rail-mount: "true"
+    factory.io/config.protocol-filters: "modbus-tcp,ethernet-ip,cip"
+    factory.io/config.deep-packet-inspection: "industrial"
+    factory.io/config.whitelisting: "enabled"
+    factory.io/config.allowed-protocols: "modbus-tcp,ethernet-ip"
+    factory.io/config.zone-segmentation: "cell-01,cell-02,cell-03"
+
+  tags:
+    - network
+    - firewall
+    - industrial
+    - cell-zone
+    - isa-3000
+
+spec:
+  type: Firewall
+  lifecycle: production
+  owner: team-ot-security
+  system: production-line-01-security
+
+  zone: zone-l1-control
+  building: Plant-A
+  floor: 1
+  space: production-line-01
+  ipAddress: "10.50.1.254"
+  manufacturer: Cisco
+  model: ISA-3000-2C2F-K9
+  firmware: "3.1.0"
+  criticality: HIGH
+
+  expectedConfig:
+    industrialRated: true
+    deepPacketInspection: industrial
+    whitelisting: enabled
+    allowedProtocols:
+      - modbus-tcp
+      - ethernet-ip
+
+  dependsOn:
+    - component:factory-network/firewall-ot-dmz
+    - component:factory-network/agg-switch-ot-01
+  dependencyOf:
+    - component:factory-network/access-switch-line-01
+    - component:factory-ot/plc-line-01-main
