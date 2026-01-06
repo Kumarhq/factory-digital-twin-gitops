@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: factory-digital-twin
+  labels:
+    name: factory-digital-twin
+    environment: production
+    app: digital-twin
