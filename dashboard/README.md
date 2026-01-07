@@ -12,6 +12,8 @@ Complete factory monitoring and GitOps drift detection system with real-time ana
 ![React](https://img.shields.io/badge/React-18.2-blue)
 
 > **📸 See the Dashboard in Action!** Check out the [screenshots folder](../screenshots) with 32 images demonstrating all features.
+>
+> **👨‍💻 For Developers:** See the complete [Developer Wiki](../DEVELOPER_WIKI.md) with architecture diagrams, code examples, API documentation, and development guides.
 
 ---
 
