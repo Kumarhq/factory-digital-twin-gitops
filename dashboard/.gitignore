@@ -122,3 +122,20 @@ secrets/
 *.key
 *.pem
 *.crt
+
+# SSH keys and setup files
+sshky.txt
+*_rsa
+*_rsa.pub
+*_ed25519
+*_ed25519.pub
+id_rsa*
+id_dsa*
+id_ecdsa*
+id_ed25519*
+
+# Setup and temporary files
+.archive/
+SSH_SETUP_INSTRUCTIONS.md
+PUSH_TO_GITHUB.md
+QUICK_PUSH_GUIDE.md
