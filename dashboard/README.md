@@ -11,6 +11,8 @@ Complete factory monitoring and GitOps drift detection system with real-time ana
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.109-green)
 ![React](https://img.shields.io/badge/React-18.2-blue)
 
+> **📸 See the Dashboard in Action!** Check out the [screenshots folder](../screenshots) with 32 images demonstrating all features.
+
 ---
 
 ## 📑 Table of Contents
