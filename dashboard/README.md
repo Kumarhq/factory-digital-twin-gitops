@@ -2,6 +2,8 @@
 
 Complete factory monitoring and GitOps drift detection system with real-time analytics.
 
+![CI](https://github.com/Kumarhq/factory-digital-twin-gitops/workflows/CI/badge.svg)
+![Deploy](https://github.com/Kumarhq/factory-digital-twin-gitops/workflows/Build,%20Test,%20and%20Deploy/badge.svg)
 ![License](https://img.shields.io/badge/License-MIT-blue)
 ![Docker](https://img.shields.io/badge/Docker-Ready-green)
 ![Kubernetes](https://img.shields.io/badge/Kubernetes-Ready-blue)
